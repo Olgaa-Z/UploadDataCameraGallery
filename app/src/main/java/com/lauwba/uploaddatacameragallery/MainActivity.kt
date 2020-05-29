@@ -6,15 +6,22 @@ import android.content.pm.PackageManager
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.lauwba.uploaddatacameragallery.network.NetworkModule
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import retrofit2.Call
+import retrofit2.Response
 
 
 class MainActivity : CameraFilePickerBaseActivity() {
+
+    private var latitude : Double? = 0.0
+    private var longitude : Double? = 0.0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +63,32 @@ class MainActivity : CameraFilePickerBaseActivity() {
         val deskripsi = RequestBody.create("text/plain".toMediaTypeOrNull(), deskripsi.text.toString())
 
         val alamat = RequestBody.create("text/plain".toMediaTypeOrNull(), alamat.text.toString())
+
+        val lat = RequestBody.create("text/plain".toMediaTypeOrNull(), latitude.toString())
+        val lon = RequestBody.create("text/plain".toMediaTypeOrNull(), longitude.toString())
+        val notelp = RequestBody.create("text/plain".toMediaTypeOrNull(), "085761990862")
+
+        NetworkModule.getService().doUpload(
+            foto = imageInput,
+            namawisata = namawisata,
+            deskripsi = deskripsi,
+            alamat = alamat,
+            lat = lat,
+            lon = lon,
+            notelp = notelp
+        ).enqueue(object : retrofit2.Callback<ResponseUpload>{
+            override fun onFailure(call: Call<ResponseUpload>, t: Throwable) {
+                Toast.makeText(this@MainActivity,"Upload Gagal !", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onResponse(
+                call: Call<ResponseUpload>,
+                response: Response<ResponseUpload>
+            ) {
+                Log.d("onVerficationCompleted", response.errorBody().toString())
+                Toast.makeText(this@MainActivity,"Upload Berhasil !", Toast.LENGTH_SHORT).show()
+            }
+        })
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
