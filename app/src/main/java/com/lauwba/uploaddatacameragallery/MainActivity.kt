@@ -9,7 +9,11 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import com.bumptech.glide.Glide
 import com.lauwba.uploaddatacameragallery.network.NetworkModule
+import com.vanillaplacepicker.presentation.builder.VanillaPlacePicker
+import com.vanillaplacepicker.utils.MapType
+import com.vanillaplacepicker.utils.PickerType
 import kotlinx.android.synthetic.main.activity_main.*
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -39,6 +43,15 @@ class MainActivity : CameraFilePickerBaseActivity() {
 
         fotofromgallery.setOnClickListener {
             launchFilePicker()
+        }
+
+        maps.setOnClickListener {
+            val placePicker = VanillaPlacePicker.Builder(this@MainActivity)
+                .with(PickerType.MAP_WITH_AUTO_COMPLETE)
+                .setMapType(MapType.NORMAL)
+                .build()
+
+            startActivityForResult(placePicker, 1052)
         }
 
         simpan.setOnClickListener {
@@ -100,6 +113,31 @@ class MainActivity : CameraFilePickerBaseActivity() {
         } else if (requestCode == 1001 && resultCode == Activity.RESULT_OK) {
             previewImage(imagePreview)
         }
+
+        //placepicker
+        if (resultCode == Activity.RESULT_OK && data != null) {
+            when (requestCode) {
+                1052 -> {
+                    val vanillaAddress = VanillaPlacePicker.onActivityResult(data)
+                    latitude = vanillaAddress?.latitude
+                    longitude = vanillaAddress?.longitude
+                    setToImageView(vanillaAddress?.latitude, vanillaAddress?.longitude)
+                }
+            }
+        }
+    }
+
+    private fun setToImageView(latitude: Double?, longitude: Double?) {
+        val key = getString(R.string.google_key)
+        val imageMapsStatic = "https://maps.googleapis.com/maps/api/" +
+                "staticmap?zoom=15&" +
+                "size=2000x320&" +
+                "markers=icon:http://illegal-trade.server411.tech/assets/map-marker-alt-solid.svg" +
+                "|$latitude,$longitude&" +
+                "key=$key"
+        Glide.with(this)
+            .load(imageMapsStatic)
+            .into(maps)
     }
 
     //request pemission decline or allow
@@ -114,6 +152,7 @@ class MainActivity : CameraFilePickerBaseActivity() {
                 launchCamera()
             }
         }
+
     }
 
 }

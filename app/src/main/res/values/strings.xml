@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">UploadDataCameraGallery</string>
+    <string name="google_key">Your key</string>
 </resources>
